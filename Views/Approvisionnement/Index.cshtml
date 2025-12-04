@@ -1,109 +1,129 @@
-﻿@{
-    ViewData["Title"] = "Approvisionnement Page";
+﻿@model IEnumerable<Models.Approvisionnement>
+@using Models
+
+@{
+    ViewData["Title"] = "Gestion des Approvisionnements";
 }
 
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Gestion des Approvisionnements</h1>
 
-        <button class="btn btn-primary" type="submit">
-            <i class="fas fa-plus"></i> Nouvel approvisionnement
-        </button>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Gestion des Approvisionnements</h2>
+        <a href="@Url.Action("Create", "Approvisionnement")" class="btn btn-primary">
+            + Nouvel approvisionnement
+        </a>
     </div>
 
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
-            <div class="card-title">
-                <h5>
-                    Filtres et recherche
-                </h5>
+    <div class="card p-3 shadow-sm mb-4">
+        <form method="get" asp-action="Index" class="row g-3">
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control" placeholder="Référence"
+                       value="@ViewContext.HttpContext.Request.Query["search"]" />
             </div>
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Nouveau">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Nouveau">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Nouveau">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-primary" type="submit">
-                        <i class="fas fa-plus"></i> Filtrer
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="card p-3">
-        <div class="card-body">
 
-            <div class="mb-2">
-                <table class="table table-hover m-0">
-                    <thead class="table-secondary">
+            <div class="col-md-3">
+                <input type="text" name="fournisseur" class="form-control" placeholder="Fournisseur"
+                       value="@ViewContext.HttpContext.Request.Query["fournisseur"]" />
+            </div>
+
+            <div class="col-md-3">
+                <select name="statut" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="Reçu">Reçu</option>
+                    <option value="EnAttente">En Attente</option>
+                    <option value="Rejeté">Rejeté</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                <a href="@Url.Action("Index", "Approvisionnement")" class="btn btn-secondary w-100">Réinitialiser</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="card p-3 shadow-sm">
+        <table class="table table-hover align-middle">
+            <thead class="table-secondary">
+                <tr>
+                    <th>Référence</th>
+                    <th>Date</th>
+                    <th>Fournisseur</th>
+                    <th>Articles</th>
+                    <th>Montant total</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var appro in Model)
+                    {
                         <tr>
-                            <th>Référence</th>
-                            <th>Date</th>
-                            <th>Fournisseur</th>
-                            <th>Articles</th>
-                            <th>Montant total</th>
-                            <th>Statut</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>APP-2023-001</td>
-                            <td>15/04/2023</td>
-                            <td>Textiles Dakar SARL</td>
+                            <td>@appro.Reference</td>
+                            <td>@appro.DateApprovisionnement.ToString("dd/MM/yyyy")</td>
+                            <td>@appro.Fournisseur?.Nom</td>
                             <td>
-                                
-                                    <span class="badge bg-primary">12</span>
-                                
+                                @if (appro.ApproArticles != null && appro.ApproArticles.Any())
+                                {
+                                    @foreach (var aa in appro.ApproArticles)
+                                    {
+                                        <div>@aa.Article?.Nom (@aa.Quantite)</div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Aucun</span>
+                                }
                             </td>
-                            <td>{{ emp.depName }}</td>
                             <td>
-                                {% include "comps/statut.html.twig" with {active: not emp.isArchived} %}
+                                @(appro.ApproArticles != null && appro.ApproArticles.Any()
+                                    ? appro.ApproArticles.Sum(a => a.Montant).ToString("N0") + " FCFA"
+                                    : "0 FCFA")
+                            </td>
+                            <td>
+                                @switch (appro.Statut)
+                                {
+                                    case StatutAppro.RECU:
+                                        <span class="badge bg-success">Reçu</span>
+                                        break;
+                                    case StatutAppro.EN_ATTENTE:
+                                        <span class="badge bg-warning">En Attente</span>
+                                        break;
+
+                                    default:
+                                        <span class="badge bg-secondary">Inconnu</span>
+                                        break;
+                                }
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="#" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-edit"></i> Details
+                                    <a href="@Url.Action("Details", "Approvisionnement", new { id = appro.Id })"
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="#" class="btn btn-sm btn-warning">
-                                        <i class="fas fa-edit"></i> Edit
+                                    <a href="@Url.Action("Edit", "Approvisionnement", new { id = appro.Id })"
+                                       class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="#" class="btn btn-sm btn-danger
-                                            {% if emp.isArchived %} disabled {% endif %}">
-                                        <i class="fas fa-trash"></i> Archiver
+                                    <a href="@Url.Action("Archive", "Approvisionnement", new { id = appro.Id })"
+                                       class="btn btn-sm btn-danger @(appro.Statut == StatutAppro.RECU ? "" : "disabled")">
+                                        <i class="fas fa-trash"></i>
                                     </a>
                                 </div>
                             </td>
                         </tr>
-                    </tbody>
-                </table>
-            </div>
-
-
-            <div class="alert alert-danger" role="alert">
-                Pas d'employés correspondant au filtre
-            </div>
-
-            <div class="alert alert-danger" role="alert">
-                La liste d'employés est vide
-            </div>
-
-            <div class="alert alert-danger" role="alert">
-                Le département n'existe pas
-            </div>
-
-        </div>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-danger">Aucun approvisionnement trouvé.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>

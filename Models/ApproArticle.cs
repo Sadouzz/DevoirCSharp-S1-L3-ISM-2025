@@ -6,8 +6,9 @@ namespace Models
         public int Quantite { get; set; }
         public decimal Montant { get; set; }
 
-        public int IdAppro { get; set; }
-        public int IdArticle { get; set; }
+        public int ApproId { get; set; }  
+        public int ArticleId { get; set; }
+
 
         public Approvisionnement Appro { get; set; }
         public Article Article { get; set; }

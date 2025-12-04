@@ -1,5 +1,9 @@
-var builder = WebApplication.CreateBuilder(args);
+using Data;
+using Services;
 
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<GesApproDbContext>();
+builder.Services.AddScoped<IApprovisionnementService, ApprovisionnementService>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

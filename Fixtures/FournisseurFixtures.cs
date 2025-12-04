@@ -3,7 +3,7 @@ using Models;
 namespace Fixtures
 {
 
-    public static class FournisseursFixture
+    public static class FournisseurFixtures
     {
         public static List<Fournisseur> GetFournisseurs()
         {
